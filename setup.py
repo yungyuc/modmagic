@@ -44,7 +44,7 @@ classifiers = [
 
 setup(
     name="modmagic",
-    version="0.0.1",
+    version="0.0.1+",
     author="Yung-Yu Chen",
     author_email="yyc@solvcon.net",
     url="https://github.com/yungyuc/modmagic",
