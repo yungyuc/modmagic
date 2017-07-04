@@ -99,7 +99,7 @@ class ModMagics(Magics):
                 pmod = sys.modules[pname]
                 setattr(pmod, names[it], sys.modules[cname])
         
-    def _build_module(self, tokens, cell):
+    def _build_module(self, tokens, cell, rebuild=False):
         """Build a module from cell.
         
         If multiple cells have tagged as the same module, those cells are
@@ -119,14 +119,18 @@ class ModMagics(Magics):
         # retrieve content module.
         content = self.contents.get(fullname, None)
         if not content:
+            bcmd = "rebuild" if rebuild else "build"
             if len(tokens) == 1:
-                line = '%%%%mod build %s' % fullname
+                line = '%%%%mod %s %s' % (bcmd, fullname)
             else:
-                line = '%%%%mod build %s in %s' % (tokens[0], tokens[2])
+                line = '%%%%mod %s %s in %s' % (bcmd, tokens[0], tokens[2])
             content = ModContent(
                 fullname, imp.new_module(fullname), cell, line=line)
         else:
-            content.source += cell
+            if rebuild:
+                content.source = cell
+            else:
+                content.source += cell
         mod = content.mod
 
         # compile the module.
@@ -181,6 +185,9 @@ class ModMagics(Magics):
             # %%module build ...
             if len(tokens) > 0 and tokens[0] == 'build':
                 self._build_module(tokens[1:], cell)
+            # %%module rebuild ...
+            elif len(tokens) > 0 and tokens[0] == 'rebuild':
+                self._build_module(tokens[1:], cell, rebuild=True)
             else:
                 print('usage: %%mod build name [in parent_package]')
                 return
